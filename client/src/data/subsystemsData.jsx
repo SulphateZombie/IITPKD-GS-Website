@@ -73,5 +73,11 @@ export const subsystems = [
     title: "Ground Station",
     desc: "Communication, live data visualization, and tracking from the launchpad.",
     icon: <AntennaIcon />
+  },
+  {
+    id: "propulsion",
+    title: "Propulsion",
+    desc: "Rocket motor - developing and testing cold gas thrusterDesigning and testing high-performance rocket motors for reliable flight.",
+    icon: <AntennaIcon />
   }
 ];
