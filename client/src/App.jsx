@@ -1,6 +1,7 @@
 import { Routes, Route } from "react-router-dom";
 import "./styles/App.css";
 import Navbar from "./components/Navbar.jsx";
+import Footer from "./components/Footer.jsx";
 import Home from "./components/Home.jsx";
 import Subsystems from "./pages/Subsystems.jsx";
 import SubsystemDetail from "./pages/SubsystemDetail.jsx";
@@ -21,6 +22,7 @@ export default function App() {
         <Route path="/projects/:id" element={<ProjectDetail />} />
         <Route path="/team" element={<MSsec sponsors={sponsors} />} />
       </Routes>
+      <Footer />
     </>
   );
 }
