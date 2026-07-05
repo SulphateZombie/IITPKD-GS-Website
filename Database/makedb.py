@@ -22,7 +22,7 @@ SCOPES = [
 # Use MONGO_URI for MongoDB Atlas (e.g. mongodb+srv://user:pass@cluster0.xxxxx.mongodb.net/)
 # Falls back to local MongoDB if MONGO_URI is not set
 MONGO_URI = os.getenv('MONGO_URI', 'mongodb://localhost:27017')
-DATABASE_NAME = 'GS_Website'
+DATABASE_NAME = 'Members'
 
 # Google Sheets Configuration
 CREDENTIALS_FILE = os.path.join(os.path.dirname(__file__), 'credentials.json')
@@ -81,6 +81,8 @@ def get_sheets_client():
 
 def import_spreadsheet_to_mongo(gc, spreadsheet_id: str, config: dict, db):
     """Import a single spreadsheet to MongoDB collection."""
+    from db import _map_record
+
     collection_name = config["collection"]
     sheet_name = config.get("sheet_name")
 
@@ -103,12 +105,15 @@ def import_spreadsheet_to_mongo(gc, spreadsheet_id: str, config: dict, db):
         print(f"No data found in spreadsheet")
         return 0
 
+    # Map Google Sheets column names to clean MongoDB field names
+    mapped_records = [_map_record(record) for record in records]
+
     # Get collection and clear existing data
     collection = db[collection_name]
     collection.delete_many({})
 
     # Insert new data
-    result = collection.insert_many(records)
+    result = collection.insert_many(mapped_records)
     count = len(result.inserted_ids)
     print(f"Inserted {count} records into '{collection_name}'")
 

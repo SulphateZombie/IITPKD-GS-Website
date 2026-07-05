@@ -7,7 +7,7 @@ export default defineConfig({
     proxy: {
       // This tells Vite: "If a request starts with /member, send it to the backend"
       '/member': {
-        target: 'http://localhost:5001',
+        target: 'http://localhost:5000',
         changeOrigin: true,
         secure: false,
       },

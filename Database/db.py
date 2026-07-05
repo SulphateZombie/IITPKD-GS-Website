@@ -8,7 +8,27 @@ load_dotenv(os.path.join(os.path.dirname(__file__), '..', '.env'))
 
 MONGO_URI = os.getenv('MONGO_URI', 'mongodb://localhost:27017')
 
-def get_db(db_name='GS_Website'):
+# Mapping from Google Sheets column names to clean MongoDB field names
+FIELD_MAPPING = {
+    "Name": "name",
+    "Photo": "photo",
+    "Subsystem": "subsystem",
+    "Hierarchal position": "position",
+    "Email ID": "email",
+    "LinkedIN ID": "linkedin",
+    "Instagram": "instagram",
+    "Current Employer": "currentEmployer",
+}
+
+def _map_record(record: dict) -> dict:
+    """Rename Google Sheets columns to clean MongoDB field names."""
+    mapped = {}
+    for key, value in record.items():
+        mapped_key = FIELD_MAPPING.get(key, key)
+        mapped[mapped_key] = value
+    return mapped
+
+def get_db(db_name='Members'):
     client = MongoClient(MONGO_URI)
     return client[db_name]
 
@@ -20,7 +40,7 @@ def sync_collections_from_sheets(unique_fields: dict = None):
 
     try:
         gc = get_sheets_client()
-        db = get_db('GS_Website')
+        db = get_db('Members')
 
         for sheet_id, config in SPREADSHEET_CONFIG.items():
             collection_name = config.get("collection")
@@ -48,15 +68,16 @@ def sync_collections_from_sheets(unique_fields: dict = None):
                 operations = []
 
                 for record in records:
+                    mapped = _map_record(record)
+
                     # Upsert using the unique field (e.g., email) to match existing database entries
-                    if unique_field in record:
-                        filter_query = {unique_field: record[unique_field]}
+                    if unique_field in mapped:
+                        filter_query = {unique_field: mapped[unique_field]}
                     else:
-                        # As a fallback if the unique field is missing, use the whole record as the filter
-                        filter_query = record
+                        filter_query = mapped
 
                     operations.append(
-                        UpdateOne(filter_query, {"$set": record}, upsert=True)
+                        UpdateOne(filter_query, {"$set": mapped}, upsert=True)
                     )
 
                 if operations:
